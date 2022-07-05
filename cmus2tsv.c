@@ -25,8 +25,11 @@
 #include <libgen.h>
 #include <stdint.h>
 #include <string.h>
+#include <assert.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+
+#define CACHE_PATH	".config/cmus/cache"
 
 #define ALIGN(size) (((size) + sizeof(long) - 1) & ~(sizeof(long) - 1))
 
@@ -192,15 +195,29 @@ close:
 
 int
 main(int argc, char *argv[]) {
-	char *base;
+	char *prog;
+	char *home, *file;
+	size_t len;
 
-	base = basename(argv[0]);
+	prog = basename(argv[0]);
 
-	if (argc != 2) {
-		fprintf(stderr, "usage: %s <cachefile>\n", base);
+	if (argc < 2) {
+		home = getenv("HOME");
+		assert(home);
+		len = strlen(home) + strlen(CACHE_PATH) + 2;
+		file = malloc(len);
+		assert(file);
+		snprintf(file, len, "%s/%s", home, CACHE_PATH);
+	} else if (argc == 2) {
+		file = argv[1];
+	} else {
+		fprintf(stderr, "usage: %s [cachefile]\n", prog);
 		return 2;
 	}
 
 	display_header();
-	read_cache(argv[1]);
+	read_cache(file);
+
+	if (file != argv[1])
+		free(file);
 }
