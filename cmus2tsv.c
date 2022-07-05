@@ -54,16 +54,28 @@ struct entry {
 	char strings[];
 };
 
+/* all (significant) metadata stored in track_info */
+enum {
+	META_TITLE,
+	META_ARTIST,
+	META_GENRE,
+	META_ALBUM,
+	META_ALBUMARTIST,
+	META_TRACK,
+	META_COMMENT,
+	META_LAST
+};
+
 void
 display_header(void) {
-	printf("Filename\tTitle\tArtist\tAlbum\tTrack\tDuration\tDuration(s)\tPlay count\n");
+	printf("Filename\tTitle\tArtist\tGenre\tAlbum\tAlbumArtist\tTrack\tDuration\tDuration(s)\tPlay count\tComment\n");
 }
 
 void
 display(struct entry *e) {
 	int size, pos, i, count;
 	char *metakey, *metaval;
-	char *title, *artist, *album, *track;
+	char *meta[META_LAST];
 
 	for (size = e->size - sizeof(*e), count = i = 0; i < size; i++) {
 		if (!e->strings[i])
@@ -76,6 +88,9 @@ display(struct entry *e) {
 	pos += strlen(e->strings + pos) + 1;
 	pos += strlen(e->strings + pos) + 1;
 
+	for (i = 0; i < META_LAST; i++)
+		meta[i] = "";
+
 	for (i = 0; i < count; i++) {
 		size = strlen(e->strings + pos) + 1;
 		metakey = e->strings + pos;
@@ -86,23 +101,36 @@ display(struct entry *e) {
 		pos += size;
 
 		if (strcmp(metakey, "title") == 0)
-			title = metaval;
+			meta[META_TITLE] = metaval;
 		else if (strcmp(metakey, "artist") == 0)
-			artist = metaval;
+			meta[META_ARTIST] = metaval;
 		else if (strcmp(metakey, "album") == 0)
-			album = metaval;
+			meta[META_ALBUM] = metaval;
 		else if (strcmp(metakey, "tracknumber") == 0)
-			track = metaval;
+			meta[META_TRACK] = metaval;
+		else if (strcmp(metakey, "genre") == 0)
+			meta[META_GENRE] = metaval;
+		else if (strcmp(metakey, "albumartist") == 0)
+			meta[META_ALBUMARTIST] = metaval;
+		else if (strcmp(metakey, "comment") == 0)
+			meta[META_COMMENT] = metaval;
 	}
 
-	printf("%s\t%s\t%s\t%s\t", title, artist, album, track);
+	if (!*meta[META_ALBUMARTIST])
+		meta[META_ALBUMARTIST] = meta[META_ARTIST];
+
+	printf("%s\t%s\t%s\t%s\t%s\t%s\t", meta[META_TITLE],
+			meta[META_ARTIST], meta[META_GENRE],
+			meta[META_ALBUM], meta[META_ALBUMARTIST],
+			meta[META_TRACK]);
 
 	if (e->duration < 60)
 		printf("00:%02d\t", e->duration);
 	else
 		printf("%02d:%02d\t", ((int)e->duration / 60), e->duration - ((int)e->duration / 60) * 60);
 
-	printf("%ld\t%d\n", e->duration, e->play_count);
+	printf("%ld\t%d\t", e->duration, e->play_count);
+	printf("%s\n", meta[META_COMMENT]);
 }
 
 void
