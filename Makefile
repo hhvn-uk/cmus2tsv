@@ -1,3 +1,5 @@
+PREFIX = /usr/local
+BINDIR = $(PREFIX)/bin
 SRC = cmus2tsv.c
 OBJ = $(SRC:.c=.o)
 BIN = cmus2tsv
@@ -10,4 +12,10 @@ $(BIN): $(OBJ)
 clean:
 	rm $(BIN) $(OBJ)
 
-.PHONY: all clean
+install:
+	install -m0755 $(BIN) $(BINDIR)/$(BIN)
+
+uninstall:
+	rm -f $(BINDIR)/$(BIN)
+
+.PHONY: all clean install uninstall
