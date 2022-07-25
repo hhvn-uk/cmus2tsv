@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# This script prints only the cached information for files in a playlist.
+#
+# cmus' cache stores information on all files ever added, even if they are then
+# deleted from the library. Since the library can be exported as a playlist
+# (:save -l library.pl), this sscript makes it possible to get cache
+# information restricted to what is present in the library. (And also if you
+# want information from playlists, as well, I guess).
+
+[ -z $1 ] && {
+	echo "usage: extractpl <playlist> [cmus2tsv args]"
+	exit 2
+}
+
+pl="$1"
+shift
+
+cmus2tsv "$@" | cat "$pl" - | awk -F"\t" 'NF == 1 {saw[$1] = 1}; NF > 1 && saw[$1] == 1'

@@ -4,6 +4,7 @@ SRC = cmus2tsv.c
 OBJ = $(SRC:.c=.o)
 BIN = cmus2tsv
 CFLAGS = -g3 -O0
+SH = cmusextractpl
 
 all: $(BIN)
 $(BIN): $(OBJ)
@@ -14,6 +15,7 @@ clean:
 
 install:
 	install -m0755 $(BIN) $(BINDIR)/$(BIN)
+	install -m0755 $(SH) $(BINDIR)/$(SH)
 
 uninstall:
 	rm -f $(BINDIR)/$(BIN)
